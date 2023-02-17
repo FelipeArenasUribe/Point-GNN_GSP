@@ -1,6 +1,6 @@
 """The file defines functions to generate graphs."""
 
-import time
+#import time
 import random
 
 import numpy as np
@@ -8,9 +8,19 @@ from sklearn.neighbors import NearestNeighbors
 import open3d
 #import tensorflow as tf
 
-def multi_layer_downsampling(points_xyz, base_voxel_size, levels=[1],
-    add_rnd3d=False,):
-    """Downsample the points using base_voxel_size at different scales"""
+def multi_layer_downsampling(points_xyz, base_voxel_size, levels=[1], add_rnd3d=False,):
+    """
+    Downsample the points using base_voxel_size at different scales.
+    
+    Input:
+        ponts_xyz: [n, 3] np. array with point's xyz coordinates, obtained from dataset.Points.xyz
+        base_voxel_size: Float voxel size (i.e. 0.8).
+        levels: Int to determine denominator scalar value to downsample point cloud N'=N*1/levels.
+        add_rnd3d: boolean, whether to add random offset when downsampling.
+
+    Output:
+        downsampled_list: np.array of size[2,1] that contains [[points_xyz],[downsampled_points]]
+    """
     xmax, ymax, zmax = np.amax(points_xyz, axis=0)
     xmin, ymin, zmin = np.amin(points_xyz, axis=0)
     xyz_offset = np.asarray([[xmin, ymin, zmin]])
@@ -46,26 +56,28 @@ def multi_layer_downsampling(points_xyz, base_voxel_size, levels=[1],
         last_level = level
     return downsampled_list
 
-def multi_layer_downsampling_select(points_xyz, base_voxel_size, levels=[1],
-    add_rnd3d=False):
-    """Downsample the points at different scales and match the downsampled
+def multi_layer_downsampling_select(points_xyz, base_voxel_size, levels=[1], add_rnd3d=False):
+    """
+    Downsample the points at different scales and match the downsampled
     points to original points by a nearest neighbor search.
 
-    Args:
+    Input:
         points_xyz: a [N, D] matrix. N is the total number of the points. D is
         the dimension of the coordinates.
         base_voxel_size: scalar, the cell size of voxel.
-        level_configs: a dict of 'level', 'graph_gen_method',
-        'graph_gen_kwargs', 'graph_scale'.
+        levels: Int to determine denominator scalar value to downsample point cloud N'=N*1/levels
         add_rnd3d: boolean, whether to add random offset when downsampling.
 
-    returns: vertex_coord_list, keypoint_indices_list
+    Output: 
+        vertex_coord_list: np.array of size[2,1] that contains [[points_xyz],[downsampled_points]], attributes are conserved from original point cloud.
+        keypoint_indices_list: np.array [:,1] with keypoint's indices in original array
     """
+
     # Voxel downsampling
-    vertex_coord_list = multi_layer_downsampling(
-        points_xyz, base_voxel_size, levels=levels, add_rnd3d=add_rnd3d)
+    vertex_coord_list = multi_layer_downsampling(points_xyz, base_voxel_size, levels=levels, add_rnd3d=add_rnd3d)
     num_levels = len(vertex_coord_list)
-    assert num_levels == len(levels) + 1
+    assert num_levels == len(levels) + 1 # If condition is not satisfied then an AssertionError is raised.
+
     # Match downsampled vertices to original by a nearest neighbor search.
     keypoint_indices_list = []
     last_level = 0
@@ -81,8 +93,7 @@ def multi_layer_downsampling_select(points_xyz, base_voxel_size, levels=[1],
                 np.expand_dims(np.arange(base_points.shape[0]),axis=1))
         else:
             # different scale (pooling layer), search original points.
-            nbrs = NearestNeighbors(n_neighbors=1,
-                algorithm='kd_tree', n_jobs=1).fit(base_points)
+            nbrs = NearestNeighbors(n_neighbors=1, algorithm='kd_tree', n_jobs=1).fit(base_points)
             indices = nbrs.kneighbors(current_points, return_distance=False)
             vertex_coord_list[i] = base_points[indices[:, 0], :]
             keypoint_indices_list.append(indices)
@@ -102,7 +113,9 @@ def multi_layer_downsampling_random(points_xyz, base_voxel_size, levels=[1],
         'graph_gen_kwargs', 'graph_scale'.
         add_rnd3d: boolean, whether to add random offset when downsampling.
 
-    returns: vertex_coord_list, keypoint_indices_list
+    returns: 
+        vertex_coord_list:
+        keypoint_indices_list:
     """
     xmax, ymax, zmax = np.amax(points_xyz, axis=0)
     xmin, ymin, zmin = np.amin(points_xyz, axis=0)
@@ -155,7 +168,9 @@ def multi_layer_downsampling_random(points_xyz, base_voxel_size, levels=[1],
 def gen_multi_level_local_graph_v3(
     points_xyz, base_voxel_size, level_configs, add_rnd3d=False,
     downsample_method='center'):
-    """Generating graphs at multiple scale. This function enforce output
+
+    """
+    Generating graphs at multiple scale. This function enforce output
     vertices of a graph matches the input vertices of next graph so that
     gnn layers can be applied sequentially.
 
@@ -167,7 +182,11 @@ def gen_multi_level_local_graph_v3(
         'graph_gen_kwargs', 'graph_scale'.
         add_rnd3d: boolean, whether to add random offset when downsampling.
         downsample_method: string, the name of downsampling method.
-    returns: vertex_coord_list, keypoint_indices_list, edges_list
+    
+    returns: 
+        vertex_coord_list: [3,1] np.array that contains [[points_xyz],[downsampled_points],[original_downsampled_neighbors]].
+        keypoint_indices_list: [2,1] np.array that contains indices for key points in the original and downsampled vertex lists.
+        edges_list:  [2,1] that contains [[edges from original points],[edges from downsampled points]]
     """
     if isinstance(base_voxel_size, list):
         base_voxel_size = np.array(base_voxel_size)
