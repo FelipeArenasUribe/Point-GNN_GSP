@@ -1,5 +1,7 @@
 import numpy as np
 import open3d
+import networkx as nx
+import pymetis as metis
 
 import sys
 from os.path import join
@@ -74,45 +76,21 @@ if __name__ == "__main__":
         edges = edges_list[0]
         keypoint_indices = keypoint_indices_list[0]
 
-        src_points = np.zeros([len(edges),3])
+        
+        G = nx.Graph() #Create a Graph Networkx object
         for i in range(0,len(edges)):
-            src_points[i][:] = nodes[edges[i][0]]
+            G.add_edge(edges[i][0], edges[i][1])
 
-        des_points = np.zeros([len(edges),3])
-        for i in range(0,len(edges)):
-            des_points[i][:] = nodes[edges[i][0]]
-        
-        
-        image_file=join(dataset._image_dir,dataset._file_list[frame_idx]+'.png')
-        print('Image file path: ',image_file)
-        '''
-        print('------------------Original Point Cloud visualization------------------')
-        print()
-        pcd = open3d.PointCloud()
-        pcd.points = open3d.Vector3dVector(original_PC.xyz)
-        #pcd.colors = open3d.Vector3dVector(colors)
-        PointCloud_Visualization.Visualize_Point_Cloud([pcd])
-        print()
+        A = nx.to_numpy_array(G) #Get Adjacency matrix from G as a np.array
 
-        print('------------------Calibrated Point Cloud visualization------------------')
-        print()
-        pcd = open3d.PointCloud()
-        pcd.points = open3d.Vector3dVector(calibrated_PC.xyz)
-        #pcd.colors = open3d.Vector3dVector(colors)
-        PointCloud_Visualization.Visualize_Point_Cloud([pcd])
-        print()
-        '''
-        print('------------------Downsampled Point Cloud visualization------------------')
-        print()
-        pcd = open3d.PointCloud()
-        pcd.points = open3d.Vector3dVector(downsampled_PC.xyz)
-        #pcd.colors = open3d.Vector3dVector(colors)
-        PointCloud_Visualization.Visualize_Point_Cloud([pcd])
-        print()
-        
-        PointCloud_Visualization.show_graph(src_points, des_points, edges) # Visualize graph generated from downsample point cloud.
+        n_cuts, membership = metis.part_graph(2, adjacency=A)
+        # n_cuts = 3
+        # membership = [1, 1, 1, 0, 1, 0, 0]
+
+        nodes_part_0 = np.argwhere(np.array(membership) == 0).ravel() # [3, 5, 6]
+        nodes_part_1 = np.argwhere(np.array(membership) == 1).ravel() # [0, 1, 2, 4]
 
         holder = False
         while holder==False:
-            if input('Enter q to visualize next point cloud: ') == 'q':
+            if input('Enter q to continue: ') == 'q':
                 holder=True

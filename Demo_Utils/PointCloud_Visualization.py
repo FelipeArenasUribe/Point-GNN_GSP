@@ -36,3 +36,37 @@ def Visualize_Point_Cloud(geometry_list, image_file_path='', show_image=False):
 
 def NormalizeData(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
+
+def show_graph(src_points, des_points, edges):
+    """
+    :param src_points: [N, 3] src_points.
+    :param des_points: [N, 3] des_points.
+    :param edges: [M, 2],M pairs of connections src_points[edges[0]] -> des_points[edges[1]]
+    :return: None
+    """
+    points = np.concatenate([src_points, des_points])
+    edges[:, 1] += src_points.shape[0]
+    line_set = open3d.LineSet()
+    line_set.points = open3d.Vector3dVector(points)
+    line_set.lines = open3d.Vector2iVector(edges)
+    line_set.paint_uniform_color([0.7, 0.8, 0.7])
+
+    pcd = open3d.PointCloud()
+    pcd.points = open3d.Vector3dVector(src_points)
+    pcd.paint_uniform_color([0.5, 1, 0.8])
+    
+    def custom_draw_geometry_load_option(geometry_list):
+        vis = open3d.Visualizer()
+        vis.create_window()
+        for geometry in geometry_list:
+            vis.add_geometry(geometry)
+        opt = vis.get_render_option()
+        opt.show_coordinate_frame = True
+        opt.background_color = np.asarray([0.5, 0.5, 0.5])
+        ctr = vis.get_view_control()
+        ctr.rotate(0.0, 3141.0, 0)
+        print('Close graph to continue.')
+        vis.run()  
+        vis.destroy_window()
+
+    custom_draw_geometry_load_option([line_set, pcd])
