@@ -2,6 +2,7 @@ import numpy as np
 import open3d
 import networkx as nx
 import pymetis as metis
+import random as rnd
 
 import sys
 from os.path import join
@@ -76,19 +77,57 @@ if __name__ == "__main__":
         edges = edges_list[0]
         keypoint_indices = keypoint_indices_list[0]
 
-        
         G = nx.Graph() #Create a Graph Networkx object
         for i in range(0,len(edges)):
             G.add_edge(edges[i][0], edges[i][1])
 
         A = nx.to_numpy_array(G) #Get Adjacency matrix from G as a np.array
 
-        n_cuts, membership = metis.part_graph(2, adjacency=A)
-        # n_cuts = 3
-        # membership = [1, 1, 1, 0, 1, 0, 0]
+        partitions = 4 # Set number of partitions
+        
+        n_cuts, membership = metis.part_graph(partitions, adjacency=A)
 
-        nodes_part_0 = np.argwhere(np.array(membership) == 0).ravel() # [3, 5, 6]
-        nodes_part_1 = np.argwhere(np.array(membership) == 1).ravel() # [0, 1, 2, 4]
+        new_node_indices = []
+
+        for i in range(0,partitions):
+            new_node_indices.append(np.argwhere(np.array(membership) == i).ravel())
+
+        #nodes_part_0 = np.argwhere(np.array(membership) == 0).ravel()
+        #nodes_part_1 = np.argwhere(np.array(membership) == 1).ravel()
+
+        new_node_xyz = []
+
+        for i in range(0, partitions):
+            new_node_xyz.append(np.zeros((len(new_node_indices[i]), 3)))
+            for j in range(0, len(new_node_indices[i])):
+                new_node_xyz[i][j] = nodes[new_node_indices[i][j]]
+
+        #new_nodes_0 = np.zeros((len(nodes_part_0), 3))
+        #new_nodes_1 = np.zeros((len(nodes_part_1), 3))
+
+        #for i in range(0,len(nodes_part_0)):
+        #    new_nodes_0[i] = nodes[nodes_part_0[i]]
+
+        #for i in range(0,len(nodes_part_1)):
+        #    new_nodes_1[i] = nodes[nodes_part_1[i]]
+
+        pcd = []
+
+        for i in range(0, partitions):
+            pcd.append(open3d.PointCloud())
+            pcd[i].points = open3d.Vector3dVector(new_node_xyz[i])
+            pcd[i].paint_uniform_color([rnd.random(), rnd.random(), rnd.random()])
+
+        #pcd_0 = open3d.PointCloud()
+        #pcd_0.points = open3d.Vector3dVector(new_nodes_0)
+        #pcd_0.paint_uniform_color([0.5, 1, 0.8])
+
+        #pcd_1 = open3d.PointCloud()
+        #pcd_1.points = open3d.Vector3dVector(new_nodes_1)
+        #pcd_1.paint_uniform_color([1, 0.5, 0.8])
+
+        #PointCloud_Visualization.Visualize_Point_Cloud([pcd_0, pcd_1])
+        PointCloud_Visualization.Visualize_Point_Cloud(pcd)
 
         holder = False
         while holder==False:

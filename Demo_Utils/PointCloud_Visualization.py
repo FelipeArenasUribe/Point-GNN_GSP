@@ -37,13 +37,22 @@ def Visualize_Point_Cloud(geometry_list, image_file_path='', show_image=False):
 def NormalizeData(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
 
-def show_graph(src_points, des_points, edges):
+def Visualize_Graph(nodes, edges):
     """
     :param src_points: [N, 3] src_points.
     :param des_points: [N, 3] des_points.
     :param edges: [M, 2],M pairs of connections src_points[edges[0]] -> des_points[edges[1]]
     :return: None
     """
+
+    src_points = np.zeros([len(edges),3])
+    for i in range(0,len(edges)):
+        src_points[i][:] = nodes[edges[i][0]]
+
+    des_points = np.zeros([len(edges),3])
+    for i in range(0,len(edges)):
+        des_points[i][:] = nodes[edges[i][0]]
+
     points = np.concatenate([src_points, des_points])
     edges[:, 1] += src_points.shape[0]
     line_set = open3d.LineSet()

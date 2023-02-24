@@ -73,19 +73,10 @@ if __name__ == "__main__":
         nodes = vertex_coord_list[0]
         edges = edges_list[0]
         keypoint_indices = keypoint_indices_list[0]
-
-        src_points = np.zeros([len(edges),3])
-        for i in range(0,len(edges)):
-            src_points[i][:] = nodes[edges[i][0]]
-
-        des_points = np.zeros([len(edges),3])
-        for i in range(0,len(edges)):
-            des_points[i][:] = nodes[edges[i][0]]
-        
         
         image_file=join(dataset._image_dir,dataset._file_list[frame_idx]+'.png')
         print('Image file path: ',image_file)
-        '''
+        
         print('------------------Original Point Cloud visualization------------------')
         print()
         pcd = open3d.PointCloud()
@@ -101,7 +92,7 @@ if __name__ == "__main__":
         #pcd.colors = open3d.Vector3dVector(colors)
         PointCloud_Visualization.Visualize_Point_Cloud([pcd])
         print()
-        '''
+        
         print('------------------Downsampled Point Cloud visualization------------------')
         print()
         pcd = open3d.PointCloud()
@@ -110,7 +101,7 @@ if __name__ == "__main__":
         PointCloud_Visualization.Visualize_Point_Cloud([pcd])
         print()
         
-        PointCloud_Visualization.show_graph(src_points, des_points, edges) # Visualize graph generated from downsample point cloud.
+        PointCloud_Visualization.Visualize_Graph(nodes, edges) # Visualize graph generated from downsample point cloud.
 
         holder = False
         while holder==False:
