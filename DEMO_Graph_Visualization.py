@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 from matplotlib import image as mpimg
 
 from dataset.kitti_dataset import KittiDataset, Points
-from Demo_Utils import Graph_generation
+from models.graph_gen import get_graph_generate_fn
 from Demo_Utils import PointCloud_Visualization
 from Demo_Utils.PointCloud_Downsampling import downsample_by_average_voxel
 
@@ -22,7 +22,13 @@ dataset = KittiDataset(
 
 voxel_size = 0.8
 
-level_configs = [
+config = {
+    "downsample_by_voxel_size": None,
+    "graph_gen_kwargs": {
+        "add_rnd3d": True,
+        "base_voxel_size": 0.8,
+        "downsample_method": "random",
+        "level_configs": [
             {
                 "graph_gen_kwargs": {
                     "num_neighbors": -1,
@@ -42,22 +48,19 @@ level_configs = [
                 "graph_scale": 1
             }
         ]
+    },
+    "graph_gen_method": "multi_level_local_graph_v3",
+}
 
-def fetch_data(frame_idx, voxel_size, level_configs):
+def fetch_data(frame_idx, voxel_size, config):
     velo_points = dataset.get_velo_points(frame_idx) # Get the entire original point cloud
-    cam_rgb_points = dataset.get_cam_points_in_image_with_rgb(frame_idx) # Get only the points that are enclosed inside the image
+    cam_rgb_points = dataset.get_cam_points_in_image_with_rgb(frame_idx, config['downsample_by_voxel_size']) # Get only the points that are enclosed inside the image and apply downsample according to config
     downsampled_PointCloud = downsample_by_average_voxel(cam_rgb_points, voxel_size) # Downsample the point cloud using average voxel method
-
-    #box_label_list = dataset.get_label(frame_idx)
-
-    '''Apply graph generation functions'''
-
-    #ML_downsampled_list = Graph_generation.multi_layer_downsampling(downsampled_PointCloud.xyz, voxel_size, levels=[2], add_rnd3d=False)
-    #vertex_coord_list, keypoint_indices_list = Graph_generation.multi_layer_downsampling_select(downsampled_PointCloud.xyz, voxel_size, levels=[2], add_rnd3d=False)
-
-    vertex_coord_list, keypoint_indices_list, edges_list = Graph_generation.gen_multi_level_local_graph_v3(downsampled_PointCloud.xyz, voxel_size, level_configs, add_rnd3d=False, downsample_method='center')
     
-    input_v = downsampled_PointCloud.attr # Generate Input vector
+    graph_generate_fn= get_graph_generate_fn(config["graph_gen_method"])
+    (vertex_coord_list, keypoint_indices_list, edges_list) = graph_generate_fn(cam_rgb_points.xyz, **config["graph_gen_kwargs"])
+
+    input_v = cam_rgb_points.attr # Generate Input vector
 
     input_v = input_v.astype(np.float32)
     vertex_coord_list = [p.astype(np.float32) for p in vertex_coord_list]
@@ -68,11 +71,11 @@ def fetch_data(frame_idx, voxel_size, level_configs):
 
 if __name__ == "__main__":
     for frame_idx in range(0, dataset.num_files):
-        original_PC, calibrated_PC, downsampled_PC, input_v, vertex_coord_list, keypoint_indices_list, edges_list = fetch_data(frame_idx, voxel_size, level_configs)
+        original_PC, calibrated_PC, downsampled_PC, input_v, nodes_coord_list, keypoint_indices_list, edges_list = fetch_data(frame_idx, voxel_size, config)
 
-        nodes = vertex_coord_list[0]
-        edges = edges_list[0]
-        keypoint_indices = keypoint_indices_list[0]
+        nodes = nodes_coord_list[1]
+        edges = edges_list[1]
+        keypoint_indices = keypoint_indices_list[1]
         
         image_file=join(dataset._image_dir,dataset._file_list[frame_idx]+'.png')
         print('Image file path: ',image_file)
@@ -101,6 +104,7 @@ if __name__ == "__main__":
         PointCloud_Visualization.Visualize_Point_Cloud([pcd])
         print()
         
+        print('------------------Downsampled Graph Point Cloud visualization------------------')
         PointCloud_Visualization.Visualize_Graph(nodes, edges) # Visualize graph generated from downsample point cloud.
 
         holder = False
