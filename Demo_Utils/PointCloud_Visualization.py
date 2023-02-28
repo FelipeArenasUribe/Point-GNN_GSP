@@ -47,6 +47,7 @@ def Visualize_Graph(nodes, edges):
     pcd = open3d.PointCloud()
     pcd.points = open3d.Vector3dVector(nodes)
     pcd.paint_uniform_color([0.5, 1, 0.8])
+    print(pcd)
 
     def custom_draw_geometry_load_option(geometry_list):
         vis = open3d.Visualizer()
