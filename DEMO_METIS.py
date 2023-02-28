@@ -80,7 +80,7 @@ if __name__ == "__main__":
         edges = edges_list[1]
         keypoint_indices = keypoint_indices_list[1]
 
-        #PointCloud_Visualization.Visualize_Graph(nodes, edges)
+        PointCloud_Visualization.Visualize_Graph(nodes, edges)
         
         G = nx.Graph() #Create a Graph Networkx object
         for i in range(0,len(edges)):
