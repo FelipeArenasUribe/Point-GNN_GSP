@@ -3,6 +3,7 @@ import open3d
 import networkx as nx
 import pymetis as metis
 import random as rnd
+from sklearn.cluster import SpectralClustering
 
 from dataset.kitti_dataset import KittiDataset
 from Demo_Utils import PointCloud_Visualization
@@ -60,16 +61,23 @@ if __name__ == "__main__":
 
         PointCloud_Visualization.Visualize_Graph(nodes, edges)
         
+        '''
         G = nx.Graph() #Create a Graph Networkx object
         for i in range(0,len(edges)):
             G.add_edge(edges[i][0], edges[i][1])
             G.add_edge(edges[i][1], edges[i][0])
         A = nx.to_numpy_array(G) #Get Adjacency matrix from G as a np.array
+        '''
 
+        n_clusters = 4 # Number of clusters to partition
+        n_components = n_clusters # Number of eigenvectors to use for the spectral embeding
+        clustering = SpectralClustering(n_clusters, n_components = n_components, assign_labels='discretize', random_state=0, affinity='nearest_neighbors').fit(nodes)
         
+        Aff = clustering.affinity_matrix_.toarray()  
+
         partitions = 4 # Set number of partitions
 
-        n_cuts, membership = metis.part_graph(partitions, adjacency=A)
+        n_cuts, membership = metis.part_graph(partitions, adjacency=Aff)
 
         new_node_indices = []
         for i in range(0,partitions):
