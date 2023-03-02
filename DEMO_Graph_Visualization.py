@@ -1,4 +1,5 @@
 import open3d
+import numpy as np
 
 from os.path import join
 
@@ -58,32 +59,65 @@ if __name__ == "__main__":
         image_file=join(dataset._image_dir,dataset._file_list[frame_idx]+'.png')
         print('Image file path: ',image_file)
         
-        print('------------------Original Point Cloud visualization------------------')
+        
+        print('------------------Original Reflection Point Cloud visualization------------------')
         print()
+        attributes = original_PC.attr.astype(np.float32)
+        c_r = np.zeros((len(attributes), 3))
+        for i in range(0,len(attributes)):
+            c_r[i][0] = attributes[i]
         pcd = open3d.PointCloud()
         pcd.points = open3d.Vector3dVector(original_PC.xyz)
-        #pcd.colors = open3d.Vector3dVector(colors)
+        pcd.colors = open3d.Vector3dVector(c_r)
+        print(pcd.colors)
+        #PointCloud_Visualization.Visualize_Point_Cloud([pcd])
+        print()
+        
+        print('------------------Calibrated RGB Point Cloud visualization------------------')
+        print()
+        attributes = calibrated_PC.attr.astype(np.float32)
+        colors = attributes[:,1:]
+        reflection = attributes[:,1]
+        c_r = np.zeros((len(attributes), 3))
+        for i in range(0,len(attributes)):
+            c_r[i][0] = reflection[i]
+        pcd = open3d.PointCloud()
+        pcd.points = open3d.Vector3dVector(calibrated_PC.xyz)
+        pcd.colors = open3d.Vector3dVector(colors)
         PointCloud_Visualization.Visualize_Point_Cloud([pcd])
         print()
-
-        print('------------------Calibrated Point Cloud visualization------------------')
+        print('------------------Calibrated Reflection Point Cloud visualization------------------')
         print()
         pcd = open3d.PointCloud()
         pcd.points = open3d.Vector3dVector(calibrated_PC.xyz)
-        #pcd.colors = open3d.Vector3dVector(colors)
+        pcd.colors = open3d.Vector3dVector(c_r)
         PointCloud_Visualization.Visualize_Point_Cloud([pcd])
         print()
-        
-        print('------------------Downsampled Point Cloud visualization------------------')
+
+        print('------------------Downsampled RGB Point Cloud visualization------------------')
+        print()
+        attributes = downsampled_PC.attr.astype(np.float32)
+        colors = attributes[:,1:]
+        reflection = attributes[:,1]
+        c_r = np.zeros((len(attributes), 3))
+        for i in range(0,len(attributes)):
+            c_r[i][0] = reflection[i]
+        pcd = open3d.PointCloud()
+        pcd.points = open3d.Vector3dVector(downsampled_PC.xyz)
+        pcd.colors = open3d.Vector3dVector(colors)
+        PointCloud_Visualization.Visualize_Point_Cloud([pcd])
+        print()
+        print('------------------Downsampled Reflection Point Cloud visualization------------------')
         print()
         pcd = open3d.PointCloud()
         pcd.points = open3d.Vector3dVector(downsampled_PC.xyz)
-        #pcd.colors = open3d.Vector3dVector(colors)
+        pcd.colors = open3d.Vector3dVector(c_r)
         PointCloud_Visualization.Visualize_Point_Cloud([pcd])
         print()
         
         print('------------------Downsampled Graph Point Cloud visualization------------------')
         PointCloud_Visualization.Visualize_Graph(nodes, edges) # Visualize graph generated from downsample point cloud.
+        
 
         holder = False
         while holder==False:

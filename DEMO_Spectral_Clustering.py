@@ -80,11 +80,9 @@ def Get_Affinity_Matrix(nodes,edges, A, gamma):
     return Aff
 
 if __name__ == "__main__":
-    for frame_idx in range(0, dataset.num_files):
-    #for frame_idx in range(0, 30):
+    #for frame_idx in range(0, dataset.num_files):
+    for frame_idx in range(0, 30):
         original_PC, calibrated_PC, downsampled_PC, input_v, nodes_coord_list, keypoint_indices_list, edges_list = fetch_data(dataset, frame_idx, voxel_size, config)
-
-        print(input_v)
 
         nodes = nodes_coord_list[1]
         edges = edges_list[1]
@@ -93,7 +91,7 @@ if __name__ == "__main__":
         print()
         print('------------------Point-GNN Generated Graph visualization------------------')
         print()
-        PointCloud_Visualization.Visualize_Graph(nodes, edges)
+        #PointCloud_Visualization.Visualize_Graph(nodes, edges)
 
         A = Get_Adjacency_Matrix(nodes, edges)
         #Aff = Get_Affinity_Matrix(nodes, edges, A, 1)
@@ -125,6 +123,9 @@ if __name__ == "__main__":
         n_clusters = 4 # Number of clusters to partition
         n_components = n_clusters # Number of eigenvectors to use for the spectral embeding
         clustering = SpectralClustering(n_clusters, n_components = n_components, assign_labels='discretize', random_state=0, affinity='nearest_neighbors').fit(nodes)
+        #clustering = SpectralClustering(n_clusters, n_components = n_components, assign_labels='discretize', random_state=0, affinity='nearest_neighbors').fit(calibrated_PC.xyz)
+        #print(len(clustering.affinity_matrix_))
+
 
         ''' Spectral Clustering with Affinity Matrix Input: '''
         '''
@@ -157,7 +158,7 @@ if __name__ == "__main__":
         print()
         print('------------------Partitioned Point Cloud visualization------------------')
         print()
-        PointCloud_Visualization.Visualize_Point_Cloud(pcd)
+        #PointCloud_Visualization.Visualize_Point_Cloud(pcd)
         
         Aff = clustering.affinity_matrix_.toarray()        
         new_edges = np.transpose(np.nonzero(Aff))
@@ -165,7 +166,7 @@ if __name__ == "__main__":
         print()
         print('------------------Spectral Clustering Generated Graph visualization------------------')
         print()
-        PointCloud_Visualization.Visualize_Graph(nodes, new_edges)
+        #PointCloud_Visualization.Visualize_Graph(nodes, new_edges)
 
         cluster_edges = []
         for i in range(0, n_clusters):
@@ -180,12 +181,16 @@ if __name__ == "__main__":
         for i in range(0,n_clusters):
             new_A.append(Get_Cluster_Adjacency_Matrix(new_node_indices[i],cluster_edges[i]))
 
-            '''
+            file_name = 'PointCloud_{}_XYZ_{}.mat'.format(frame_idx,i)
+            print('Saving: ',file_name)
+            mdic = {'PointCloud_{}_XYZ_{}'.format(frame_idx,i): new_node_xyz[i]}
+            savemat(file_name, mdic)
+
             file_name = 'PointCloud_{}_Partition_{}.mat'.format(frame_idx,i)
             print('Saving: ',file_name)
             mdic = {'PointCloud_{}_Partition_{}'.format(frame_idx,i): new_A[i]}
             savemat(file_name, mdic)
-            '''
+            
         
         #holder = False
         #while holder==False:
