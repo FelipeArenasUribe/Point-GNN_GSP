@@ -137,6 +137,9 @@ class MultiLayerFastLocalGraphModelV2(object):
                                     t_keypoint_indices,
                                     t_edges,
                                     **layer_kwargs)
+                                print('Extracted features from point cloud: ')
+                                print(tfeatures)
+                                input("Press Enter to continue...")
                         else:
                             tfeatures = flgn.apply_regular(
                                 tfeatures,
@@ -144,6 +147,9 @@ class MultiLayerFastLocalGraphModelV2(object):
                                 t_keypoint_indices,
                                 t_edges,
                                 **layer_kwargs)
+                            print('Extracted features from point cloud: ')
+                            print(tfeatures)
+                            input("Press Enter to continue...")
 
                         tfeatures_list.append(tfeatures)
                         print('Feature Dim:' + str(tfeatures.shape[-1]))

@@ -265,6 +265,9 @@ class PointSetPooling(object):
             point_set_coordinates - point_set_keypoint_coordinates
         point_set_features = tf.concat(
             [point_set_features, point_set_coordinates], axis=-1)
+        print('Point set features from the point set: ')
+        print(point_set_features)
+        input("Press Enter to continue...")
         with tf.variable_scope('extract_vertex_features'):
             # Step 1: Extract all vertex_features
             extracted_point_features = self._point_feature_fn(

@@ -225,6 +225,13 @@ for gi in range(NUM_GPU):
             model = get_model(config['model_name'])(num_classes=NUM_CLASSES,
                 box_encoding_len=BOX_ENCODING_LEN, mode='train',
                 **config['model_kwargs'])
+            
+            '''
+            model.predict() Runs the data trough the model build using model.py class: MultiLayerFastLocalGraphModelV2
+
+            This model extracts the features from the entire calibrated point cloud and corelates those extracted features
+            to the graph's nodes.
+            '''
             t_logits, t_pred_box = model.predict(
                 t_initial_vertex_features, t_vertex_coord_list,
                 t_keypoint_indices_list, t_edges_list, t_is_training)
