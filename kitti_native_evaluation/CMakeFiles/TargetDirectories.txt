@@ -1,3 +1,0 @@
-/home/sharedFolder/Point-GNN/kitti_native_evaluation/CMakeFiles/rebuild_cache.dir
-/home/sharedFolder/Point-GNN/kitti_native_evaluation/CMakeFiles/edit_cache.dir
-/home/sharedFolder/Point-GNN/kitti_native_evaluation/CMakeFiles/evaluate_object_offline.dir
