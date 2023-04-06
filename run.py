@@ -331,15 +331,12 @@ with tf.Session(graph=graph,
                 last_layer_points_color[:, :] =  color_map[raw_box_labels, :]
                 cam_points_color = cam_rgb_points.attr[:, 1:]
 
-                #pcd.points = open3d.Vector3dVector(np.vstack([last_layer_points_xyz[box_indices][nms_indices],last_layer_points_xyz, cam_rgb_points.xyz]))
-                
-                pcd.points = open3d.Vector3dVector(np.vstack([last_layer_points_xyz[box_indices][nms_indices],last_layer_points_xyz]))
+                ## Remove Raw Point Cloud points in the visualization
+                pcd.points = open3d.Vector3dVector(np.vstack([last_layer_points_xyz[box_indices][nms_indices],last_layer_points_xyz, cam_rgb_points.xyz]))
 
-                pcd.colors = open3d.Vector3dVector(np.vstack(
-                    [last_layer_points_color[box_indices][nms_indices],
-                    np.tile([(1,0.,200./255)],
-                        (last_layer_points_color.shape[0], 1)),
-                    cam_points_color]))
+                ## Remove colors
+                pcd.colors = open3d.Vector3dVector(np.vstack([last_layer_points_color[box_indices][nms_indices], np.tile([(1,0.,200./255)], (last_layer_points_color.shape[0], 1)), cam_points_color]))
+
                 output_points_idx = box_indices[nms_indices]//NUM_CLASSES
                 edge_mask = np.isin(
                     edges_list[last_layer_graph_level][:, 1],
@@ -465,9 +462,9 @@ with tf.Session(graph=graph,
                 box_edges = np.array([[0, 0]])
                 box_colors =  np.array([[0, 0, 0]])
                 pcd.points = open3d.Vector3dVector(np.vstack([last_layer_points_xyz, cam_rgb_points.xyz]))
-                pcd.colors = open3d.Vector3dVector(np.vstack([np.tile(
-                    [(128./255,0.,128./255)],
-                    (last_layer_points_color.shape[0], 1)), cam_points_color]))
+
+                pcd.colors = open3d.Vector3dVector(np.vstack([np.tile([(128./255,0.,128./255)],(last_layer_points_color.shape[0], 1)), cam_points_color]))
+
                 graph_line_set.points = open3d.Vector3dVector(
                     np.array([[0, 0, 0]]))
                 graph_line_set.lines = open3d.Vector2iVector(
@@ -534,9 +531,27 @@ with tf.Session(graph=graph,
                 vis.run()
                 vis.destroy_window()
 
+            ## Remove edges between node that builts box (graph_line_set)
             #custom_draw_geometry_load_option([pcd, line_set, graph_line_set])
 
-            custom_draw_geometry_load_option([pcd, line_set])
+            points = vertex_coord_list[last_layer_graph_level+1]
+            probs = results['probs']
+            points_label = []
+            colors = []
+
+            color_dict = {  0: [0, 0, 0],
+                            1: [1, 0, 0],
+                            2: [0, 1, 0],
+                            3: [0, 0, 1]}
+
+            for i in range(0,len(points)):
+                points_label.append(np.argmax(probs[i]))
+                colors.append(color_dict[points_label[i]])
+
+            pcd.points = open3d.Vector3dVector(points)
+            pcd.colors = open3d.Vector3dVector(colors)
+
+            custom_draw_geometry_load_option([pcd])
 
         total_time = time.time()
         time_dict['total'] = time_dict.get('total', 0) \
