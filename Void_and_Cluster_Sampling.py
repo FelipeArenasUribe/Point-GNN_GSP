@@ -98,8 +98,6 @@ def Void_and_Cluster(points_xyz, n_clusters=4, n_components=4):
     return vertex_coord_list, keypoint_indices_list
 
 def Void_and_Cluster_Downsampling(points_xyz, n_clusters = 4, n_components = 4, n_neighbors = 128):
-
-
     data = points_xyz
 
     # Create graph partitions using Spectral Clustering

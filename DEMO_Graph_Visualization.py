@@ -54,6 +54,7 @@ if __name__ == "__main__":
 
         nodes = nodes_coord_list[1]
         edges = edges_list[1]
+        print(len(edges_list[1]))
         keypoint_indices = keypoint_indices_list[1]
         
         image_file=join(dataset._image_dir,dataset._file_list[frame_idx]+'.png')

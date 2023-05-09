@@ -28,7 +28,7 @@ def Visualize_Point_Cloud(geometry_list, image_file_path='', show_image=False):
         print(geometry_list)
         opt = vis.get_render_option()
         opt.show_coordinate_frame = False
-        opt.background_color = np.asarray([0.5, 0.5, 0.5])
+        opt.background_color = np.asarray([1, 1, 1])
         ctr = vis.get_view_control()
         ctr.rotate(0.0, 3141.0, 0)
         print('Close point cloud to continue.')
@@ -80,7 +80,7 @@ def Visualize_Partitioned_Graph(nodes, edges, pcds):
             vis.add_geometry(geometry)
         opt = vis.get_render_option()
         opt.show_coordinate_frame = True
-        opt.background_color = np.asarray([0.5, 0.5, 0.5])
+        opt.background_color = np.asarray([1, 1, 1])
         ctr = vis.get_view_control()
         ctr.rotate(0.0, 3141.0, 0)
         print('Close graph to continue.')
@@ -110,7 +110,7 @@ def Visualize_Graphs(nodes, edges):
             vis.add_geometry(geometry)
         opt = vis.get_render_option()
         #opt.show_coordinate_frame = True
-        opt.background_color = np.asarray([0.5, 0.5, 0.5])
+        opt.background_color = np.asarray([1, 1, 1])
         ctr = vis.get_view_control()
         ctr.rotate(0.0, 3141.0, 0)
         print('Close graph to continue.')
@@ -166,7 +166,7 @@ def Visualize_Point_Clouds(Point_clouds):
             vis.add_geometry(geometry)
         opt = vis.get_render_option()
         opt.show_coordinate_frame = True
-        opt.background_color = np.asarray([0.5, 0.5, 0.5])
+        opt.background_color = np.asarray([1, 1, 1])
         ctr = vis.get_view_control()
         ctr.rotate(0.0, 3141.0, 0)
         print('Close graph to continue.')

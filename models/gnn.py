@@ -6,6 +6,8 @@ import tensorflow as tf
 import numpy as np
 import tensorflow.contrib.slim as slim
 
+
+
 def instance_normalization(features):
     with tf.variable_scope(None, default_name='IN'):
         mean, variance = tf.nn.moments(
@@ -252,6 +254,9 @@ class PointSetPooling(object):
         Output_depth depends on the feature extraction options that
         are selected.
         """
+
+        
+
         # Gather the points in a set
         point_set_features = tf.gather(point_features, set_indices[:,0])
         point_set_coordinates = tf.gather(point_coordinates, set_indices[:,0])
@@ -265,7 +270,7 @@ class PointSetPooling(object):
             point_set_coordinates - point_set_keypoint_coordinates
         point_set_features = tf.concat(
             [point_set_features, point_set_coordinates], axis=-1)
-
+        
         with tf.variable_scope('extract_vertex_features'):
             # Step 1: Extract all vertex_features
             extracted_point_features = self._point_feature_fn(
@@ -281,6 +286,7 @@ class PointSetPooling(object):
                 Ks=output_MLP_depth_list, is_logits=False,
                 normalization_type=output_MLP_normalization_type,
                 activation_type=output_MLP_activation_type)
+
         return set_features
 
 class GraphNetAutoCenter(object):

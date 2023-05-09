@@ -22,6 +22,8 @@ from models import nms
 from util.config_util import load_config, load_train_config
 from util.summary_util import write_summary_scale
 
+import pdb
+
 parser = argparse.ArgumentParser(description='Point-GNN inference on KITTI')
 parser.add_argument('checkpoint_path', type=str,
                    help='Path to checkpoint')
@@ -258,6 +260,9 @@ with tf.Session(graph=graph,
             dict(zip(t_keypoint_indices_list, keypoint_indices_list)))
         feed_dict.update(dict(zip(t_vertex_coord_list, vertex_coord_list)))
         results = sess.run(fetches, feed_dict=feed_dict)
+
+
+
         gnn_time = time.time()
         time_dict['gnn inference'] = time_dict.get('gnn inference', 0) \
             + gnn_time - graph_time
@@ -542,7 +547,7 @@ with tf.Session(graph=graph,
             color_dict = {  0: [0, 0, 0],
                             1: [1, 0, 0],
                             2: [0, 1, 0],
-                            3: [0, 0, 1]}
+                            3: [0.7, 0.7, 0]}
 
             for i in range(0,len(points)):
                 points_label.append(np.argmax(probs[i]))
